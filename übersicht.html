@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<!-- Trainingsübersicht - Fortschrittsseite -->
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trainingsübersicht 2025</title>
+  <style>
+    body { background-color: #000; color: #fff; font-family: Arial, sans-serif; padding: 2rem; }
+    h1 { text-align: center; }
+    .grid { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 2rem; }
+    .box { width: 16px; height: 16px; background-color: #222; border: 1px solid #fff; border-radius: 3px; }
+    .box.done { background-color: #fff; }
+  </style>
+</head>
+<body>
+  <h1>Erledigte Tage im Trainingsjahr 2025</h1>
+  <div class="grid" id="tracker"></div>
+  <script>
+    const startDate = new Date('2025-05-31');
+    const endDate = new Date('2025-12-31');
+    const tracker = document.getElementById('tracker');
+    while (startDate <= endDate) {
+      const dateKey = startDate.toISOString().split('T')[0];
+      const box = document.createElement('div');
+      box.className = 'box';
+      const trainingDone = localStorage.getItem(`${dateKey}-training`) === 'true';
+      const ernDone = localStorage.getItem(`${dateKey}-ernaehrung`) === 'true';
+      if (trainingDone && ernDone) {
+        box.classList.add('done');
+      }
+      tracker.appendChild(box);
+      startDate.setDate(startDate.getDate() + 1);
+    }
+  </script>
+</body>
+</html>

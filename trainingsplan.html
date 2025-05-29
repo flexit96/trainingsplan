@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<!-- Trainingsplan Agent 2025 - Hauptseite -->
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trainingsplan Agent 2025</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #000; color: #fff; padding: 2rem; }
+    h1, h2 { text-align: center; }
+    .calendar { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
+    .day { border: 1px solid #fff; padding: 1rem; width: 400px; background-color: #111; border-radius: 10px; position: relative; }
+    .day input[type="checkbox"], .day input[type="number"] { margin-right: 0.5rem; }
+    .day textarea { width: 100%; margin-top: 0.5rem; background: #222; color: #fff; border: 1px solid #555; border-radius: 5px; padding: 0.5rem; }
+    canvas.confetti { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
+    .exercise { margin-top: 1rem; }
+    .exercise label { display: block; margin-bottom: 0.25rem; }
+    .exercise input { width: 100%; margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>Trainingsplan 2025</h1>
+  <h2>3er Split – Start: Samstag, 31. Mai 2025</h2>
+  <div class="calendar" id="calendar"></div>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script>
+    const startDate = new Date('2025-05-31');
+    const endDate = new Date('2025-12-31');
+    const calendar = document.getElementById('calendar');
+    const planCycle = ["Brust & Trizeps", "Rücken & Bizeps", "Cardio"];
+
+    function createBrustTrizepsContent(dayBox, dateKey) {
+      const uebungen = [
+        'Bankdrücken (Flachbank, LH)',
+        'Schrägbankdrücken (KH)',
+        'Butterfly (Sitzend)',
+        'Liegestütze (maximal)',
+        'Trizeps Seilzug (vorn)',
+        'Trizeps Seilzug (über Kopf)',
+        'Trizeps Maschine (sitzend)'
+      ];
+      uebungen.forEach((name, index) => {
+        const container = document.createElement('div');
+        container.className = 'exercise';
+        const label = document.createElement('label');
+        label.textContent = name;
+        container.appendChild(label);
+        for (let satz = 1; satz <= 4; satz++) {
+          const input = document.createElement('input');
+          input.type = 'number';
+          input.placeholder = `Satz ${satz} – Gewicht (kg)`;
+          input.dataset.key = `${dateKey}-uebung-${index}-satz-${satz}`;
+          input.value = localStorage.getItem(input.dataset.key) || '';
+          input.addEventListener('input', () => {
+            localStorage.setItem(input.dataset.key, input.value);
+          });
+          container.appendChild(input);
+        }
+        dayBox.appendChild(container);
+      });
+    }
+
+    let trainingTagIndex = 0;
+
+    while (startDate <= endDate) {
+      const tagTyp = planCycle[trainingTagIndex % planCycle.length];
+      const dateKey = startDate.toISOString().split('T')[0];
+
+      const dayBox = document.createElement('div');
+      dayBox.className = 'day';
+
+      const canvas = document.createElement('canvas');
+      canvas.className = 'confetti';
+      canvas.width = 400;
+      canvas.height = 300;
+      dayBox.appendChild(canvas);
+
+      const dateStr = startDate.toLocaleDateString('de-DE');
+      const dateEl = document.createElement('strong');
+      dateEl.textContent = `${dateStr} – ${tagTyp}`;
+      dayBox.appendChild(dateEl);
+      dayBox.appendChild(document.createElement('br'));
+
+      const label1 = document.createElement('label');
+      const check1 = document.createElement('input');
+      check1.type = 'checkbox';
+      check1.className = 'training';
+      check1.checked = localStorage.getItem(`${dateKey}-training`) === 'true';
+      check1.addEventListener('change', () => {
+        localStorage.setItem(`${dateKey}-training`, check1.checked);
+        checkAndCelebrate();
+      });
+      label1.appendChild(check1);
+      label1.append('Training erledigt');
+      dayBox.appendChild(label1);
+      dayBox.appendChild(document.createElement('br'));
+
+      const label2 = document.createElement('label');
+      const check2 = document.createElement('input');
+      check2.type = 'checkbox';
+      check2.className = 'ernaehrung';
+      check2.checked = localStorage.getItem(`${dateKey}-ernaehrung`) === 'true';
+      check2.addEventListener('change', () => {
+        localStorage.setItem(`${dateKey}-ernaehrung`, check2.checked);
+        checkAndCelebrate();
+      });
+      label2.appendChild(check2);
+      label2.append('Ernährung beachtet');
+      dayBox.appendChild(label2);
+      dayBox.appendChild(document.createElement('br'));
+
+      if (tagTyp === "Brust & Trizeps") {
+        createBrustTrizepsContent(dayBox, dateKey);
+      } else {
+        const note = document.createElement('textarea');
+        note.placeholder = `Notizen zum Trainingstag: ${tagTyp}`;
+        note.value = localStorage.getItem(`${dateKey}-notiz`) || '';
+        note.addEventListener('input', () => {
+          localStorage.setItem(`${dateKey}-notiz`, note.value);
+        });
+        dayBox.appendChild(note);
+      }
+
+      calendar.appendChild(dayBox);
+
+      const checkAndCelebrate = () => {
+        if (check1.checked && check2.checked) {
+          const myConfetti = confetti.create(canvas, { resize: true });
+          myConfetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        }
+      };
+      checkAndCelebrate();
+      startDate.setDate(startDate.getDate() + 1);
+      trainingTagIndex++;
+    }
+  </script>
+</body>
+</html>
